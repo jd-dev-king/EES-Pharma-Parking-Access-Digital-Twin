@@ -99,10 +99,58 @@ class Parking3D {
   async gateTo(g,open){g.target=open?(g.group.position.x<0?-Math.PI/2:Math.PI/2):0;await sleep(650);}
   move(obj,points,duration){return new Promise(resolve=>{const start=performance.now(),path=[obj.position.clone(),...points];this.animations.push(now=>{const p=Math.min(1,(now-start)/duration),n=path.length-1,s=p*n,i=Math.min(n-1,Math.floor(s)),t=s-i,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;obj.position.lerpVectors(path[i],path[i+1],e);if(p>=1){resolve();return true}return false});});}
   parkImmediate(session){
-    if(this.carMap.has(session.vehicle_identifier))return;
-    const spot=this.spot(session.spot_number);if(!spot)return;
-    const visitor=session.occupant_type==='VISITOR';const car=this.car(this.colorFor(session.vehicle_identifier,visitor),visitor);car.position.set(spot.x,0,spot.z);car.rotation.y=spot.rot;this.scene.add(car);spot.occupied=true;spot.glow.material.color.setHex(visitor?0x5b3510:0x173c26);spot.glow.material.emissive.setHex(visitor?0xffa62b:0x40f6a1);this.carMap.set(session.vehicle_identifier,{mesh:car,spot,visitor});
+  if(this.carMap.has(session.vehicle_identifier)) return;
+
+  // Production API returns `space_number`.
+  // Keep `spot_number` as a compatibility fallback for entry-animation responses.
+  const spaceNumber = String(
+    session.space_number ?? session.spot_number ?? ""
+  ).trim().toUpperCase();
+
+  if(!spaceNumber) {
+    console.warn(
+      "Parking session missing space assignment:",
+      session.vehicle_identifier,
+      session
+    );
+    return;
   }
+
+  const spot = this.spot(spaceNumber);
+
+  if(!spot) {
+    console.warn(
+      `Parking space ${spaceNumber} was not found in the Three.js lot`,
+      session
+    );
+    return;
+  }
+
+  const visitor = session.occupant_type === "VISITOR";
+  const car = this.car(
+    this.colorFor(session.vehicle_identifier, visitor),
+    visitor
+  );
+
+  car.position.set(spot.x, 0, spot.z);
+  car.rotation.y = spot.rot;
+
+  this.scene.add(car);
+
+  spot.occupied = true;
+  spot.glow.material.color.setHex(
+    visitor ? 0x5b3510 : 0x173c26
+  );
+  spot.glow.material.emissive.setHex(
+    visitor ? 0xffa62b : 0x40f6a1
+  );
+
+  this.carMap.set(session.vehicle_identifier, {
+    mesh: car,
+    spot,
+    visitor
+  });
+}
   syncSessions(sessions){
     const active=new Set(sessions.map(s=>s.vehicle_identifier));
     for(const [id,item] of this.carMap){if(!active.has(id)){this.scene.remove(item.mesh);item.spot.occupied=false;item.spot.glow.material.color.setHex(0x11364c);item.spot.glow.material.emissive.setHex(0x1ca9e0);this.carMap.delete(id);}}
