@@ -66,3 +66,129 @@
   background: rgba(255, 170, 40, 0.16);
   border-color: #ffc65c;
 }   
+
+.auto-run-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(91, 208, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(4, 18, 31, 0.78);
+}
+
+.auto-run-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auto-run-header h3 {
+  margin: 0.2rem 0 0;
+}
+
+.auto-run-state {
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+}
+
+.auto-run-state span {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auto-run-state strong {
+  font-size: 1rem;
+}
+
+.auto-run-controls {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.auto-run-status-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(120px, 1fr)
+  );
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.auto-run-status-grid article {
+  padding: 0.65rem;
+  border: 1px solid rgba(91, 208, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(3, 15, 26, 0.7);
+}
+
+.auto-run-status-grid span,
+.auto-run-event span {
+  display: block;
+  color: var(--muted, #8fa7b6);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.auto-run-status-grid strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1rem;
+}
+
+.auto-run-event {
+  margin-top: 0.65rem;
+  padding: 0.65rem;
+  border-left: 3px solid rgba(91, 208, 255, 0.55);
+  background: rgba(3, 15, 26, 0.48);
+}
+
+.auto-run-event strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 700px) {
+  .auto-run-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .auto-run-state {
+    justify-items: start;
+  }
+
+  .auto-run-controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Parking Auto Run HMI visual fixes — v3.0.7 */
+#auto-run-phase {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  line-height: 1.1;
+  font-size: clamp(0.72rem, 0.9vw, 0.92rem);
+}
+
+.auto-run-status-grid article {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.auto-run-status-grid strong {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

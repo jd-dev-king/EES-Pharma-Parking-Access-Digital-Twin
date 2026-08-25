@@ -7,7 +7,7 @@
 
   <meta
     name="description"
-    content="EES Universe Pharma employee parking access-control digital twin with a browser PLC, PostgreSQL authorization, security visitor workflow, and Three.js 3D parking lot."
+    content="EES Universe Pharma employee parking access-control digital twin with a browser PLC, PostgreSQL workforce integration, security visitor workflow, accelerated shift-driven auto run, overflow behavior, and Three.js 3D parking lot."
   >
 
   <title>EES Pharma Parking Access Digital Twin</title>
@@ -126,6 +126,10 @@
               Exit
             </button>
 
+            <button data-camera="overflow">
+              Overflow
+            </button>
+
           </div>
 
         </div>
@@ -233,6 +237,154 @@
            ==================================================== -->
 
       <aside class="right-column">
+
+
+        <!-- ==================================================
+             ACCELERATED AUTO RUN
+             ================================================== -->
+
+        <section class="panel auto-run-panel">
+
+          <div class="auto-run-header">
+
+            <div>
+              <p class="eyebrow">
+                ACCELERATED SIMULATION
+              </p>
+
+              <h2>
+                Shift-Driven Auto Run
+              </h2>
+            </div>
+
+            <div class="auto-run-state">
+              <span id="auto-run-state">
+                IDLE
+              </span>
+
+              <strong id="auto-run-clock">
+                MONDAY 05:30
+              </strong>
+            </div>
+
+          </div>
+
+
+          <div class="auto-run-controls">
+
+            <button
+              id="auto-run-start"
+              class="primary-action"
+            >
+              Start Auto Run
+            </button>
+
+            <button
+              id="auto-run-stop"
+              disabled
+            >
+              Stop Auto Run
+            </button>
+
+          </div>
+
+
+          <div class="auto-run-status-grid">
+
+            <article>
+              <span>
+                Phase
+              </span>
+
+              <strong id="auto-run-phase">
+                IDLE
+              </strong>
+            </article>
+
+
+            <article>
+              <span>
+                Secured Lot
+              </span>
+
+              <strong id="auto-run-occupied">
+                0/70
+              </strong>
+            </article>
+
+
+            <article>
+              <span>
+                Employees
+              </span>
+
+              <strong id="auto-run-employees">
+                0
+              </strong>
+            </article>
+
+
+            <article>
+              <span>
+                Contractors
+              </span>
+
+              <strong id="auto-run-contractors">
+                0
+              </strong>
+            </article>
+
+
+            <article>
+              <span>
+                Visitors
+              </span>
+
+              <strong id="auto-run-visitors">
+                0
+              </strong>
+            </article>
+
+
+            <article>
+              <span>
+                Overflow
+              </span>
+
+              <strong id="auto-run-overflow">
+                0/30
+              </strong>
+            </article>
+
+          </div>
+
+
+          <div class="auto-run-event">
+
+            <span>
+              Current Event
+            </span>
+
+            <strong id="auto-run-event">
+              Waiting
+            </strong>
+
+          </div>
+
+
+          <div class="auto-run-event">
+
+            <span>
+              Next
+            </span>
+
+            <strong id="auto-run-next">
+              Start auto run
+            </strong>
+
+          </div>
+
+        </section>
 
 
         <!-- ==================================================
@@ -845,11 +997,18 @@
           Employee vehicles are authorized automatically from
 
           <code>
-            ees_data_platform.parking_access.employee_vehicles
+            ees_data_platform.workforce.employees
+          </code>
+          through
+          <code>
+            parking_access.employee_vehicles.workforce_employee_id
           </code>.
 
           Employee access exceptions and unknown vehicles require
           Security approval before the gate output can energize.
+          Auto Run accelerates real workforce shift assignments for
+          portfolio demonstration while preserving the same parking
+          session and access-control data paths.
 
         </div>
 
@@ -973,7 +1132,7 @@
 
   <script
     type="module"
-    src="./app.js?v=3.0.4"
+    src="./app.js?v=3.0.7"
   ></script>
 
 </body>

@@ -44,7 +44,15 @@ class Parking3D {
     this.controls.maxPolarAngle = Math.PI/2.05;
     this.controls.minDistance = 28;
     this.controls.maxDistance = 145;
-    this.spots=[]; this.carMap=new Map(); this.animations=[];
+    this.spots=[];
+    this.carMap=new Map();
+    this.overflowSpots=[];
+    this.overflowCarMap=new Map();
+    this.animations=[];
+    this.mainSessionsInitialized=false;
+    this.overflowSessionsInitialized=false;
+    this.gatePulseQueue=Promise.resolve();
+    this.gatePulsePending={ENTRY:false,EXIT:false};
     this.build(); this.resize();
     addEventListener('resize',()=>this.resize());
     this.renderer.setAnimationLoop(()=>this.render());
@@ -53,18 +61,47 @@ class Parking3D {
   add(geo,mat,pos){const m=new THREE.Mesh(geo,mat);m.position.copy(pos);m.castShadow=true;m.receiveShadow=true;this.scene.add(m);return m;}
   build(){
     this.scene.add(new THREE.HemisphereLight(0xa9e5ff,0x18202a,2.3));
-    const sun=new THREE.DirectionalLight(0xffffff,3.7);sun.position.set(45,70,38);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-70;sun.shadow.camera.right=70;sun.shadow.camera.top=70;sun.shadow.camera.bottom=-70;this.scene.add(sun);
-    const glow=new THREE.PointLight(0x29cfff,55,95);glow.position.set(-42,15,-20);this.scene.add(glow);
-    this.add(new THREE.BoxGeometry(82,.8,80),this.mat(0x202a34),new THREE.Vector3(0,-.5,0));
+
+    const sun=new THREE.DirectionalLight(0xffffff,3.7);
+    sun.position.set(55,78,45);
+    sun.castShadow=true;
+    sun.shadow.mapSize.set(2048,2048);
+    sun.shadow.camera.left=-90;
+    sun.shadow.camera.right=120;
+    sun.shadow.camera.top=90;
+    sun.shadow.camera.bottom=-90;
+    this.scene.add(sun);
+
+    const secureGlow=new THREE.PointLight(0x29cfff,55,95);
+    secureGlow.position.set(-42,15,-20);
+    this.scene.add(secureGlow);
+
+    const overflowGlow=new THREE.PointLight(0xffa93f,38,85);
+    overflowGlow.position.set(75,12,-12);
+    this.scene.add(overflowGlow);
+
+    // Main secured parking platform.
+    this.add(
+      new THREE.BoxGeometry(82,.8,80),
+      this.mat(0x202a34),
+      new THREE.Vector3(0,-.5,0)
+    );
+
     const curb=this.mat(0x697680);
     this.add(new THREE.BoxGeometry(84,.7,1),curb,new THREE.Vector3(0,0,-40));
     this.add(new THREE.BoxGeometry(84,.7,1),curb,new THREE.Vector3(0,0,40));
     this.add(new THREE.BoxGeometry(1,.7,81),curb,new THREE.Vector3(-42,0,0));
     this.add(new THREE.BoxGeometry(1,.7,81),curb,new THREE.Vector3(42,0,0));
+
     this.buildSpots();
+
     this.entryGate=this.gate(-17,36.2,'ENTRY');
     this.exitGate=this.gate(17,36.2,'EXIT');
+
+    // Separate, visually distinct unsecured overflow lot.
+    this.buildOverflowLot();
   }
+
   buildSpots(){
     const line=new THREE.MeshBasicMaterial({color:0x59d0ff});
     const rowLetters='ABCDEFG';
@@ -80,6 +117,210 @@ class Parking3D {
       }
     }
   }
+
+  textSprite(text, position, scale=[20,5,1]){
+    const canvas=document.createElement('canvas');
+    canvas.width=1024;
+    canvas.height=256;
+
+    const ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='rgba(5,15,24,.88)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.strokeStyle='#ffb347';
+    ctx.lineWidth=12;
+    ctx.strokeRect(8,8,canvas.width-16,canvas.height-16);
+    ctx.fillStyle='#ffd58a';
+    ctx.font='bold 72px system-ui, sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(text,canvas.width/2,canvas.height/2);
+
+    const texture=new THREE.CanvasTexture(canvas);
+    texture.colorSpace=THREE.SRGBColorSpace;
+
+    const material=new THREE.SpriteMaterial({
+      map:texture,
+      transparent:true,
+      depthWrite:false
+    });
+
+    const sprite=new THREE.Sprite(material);
+    sprite.position.set(...position);
+    sprite.scale.set(...scale);
+    this.scene.add(sprite);
+    return sprite;
+  }
+
+  buildOverflowLot(){
+    const base=this.mat(0x252729,0x5a3d12,.08);
+
+    // Compact overflow footprint sized to remain visible beside the
+    // secured 70-space lot at normal 100% browser zoom.
+    this.add(
+      new THREE.BoxGeometry(42,.55,48),
+      base,
+      new THREE.Vector3(68,-.42,1)
+    );
+
+    const edge=this.mat(0x6c522f,0xffa93f,.22);
+    this.add(new THREE.BoxGeometry(44,.25,.35),edge,new THREE.Vector3(68,.02,-23));
+    this.add(new THREE.BoxGeometry(44,.25,.35),edge,new THREE.Vector3(68,.02,25));
+    this.add(new THREE.BoxGeometry(.35,.25,48),edge,new THREE.Vector3(46,.02,1));
+    this.add(new THREE.BoxGeometry(.35,.25,48),edge,new THREE.Vector3(90,.02,1));
+
+    this.textSprite(
+      'UNSECURED OVERFLOW · O01–O30',
+      [68,6.5,-21],
+      [21,5.2,1]
+    );
+
+    const line=new THREE.MeshBasicMaterial({color:0xffb347});
+
+    for(let r=0;r<3;r++){
+      for(let c=0;c<10;c++){
+        const index=r*10+c+1;
+        const number=`O${String(index).padStart(2,'0')}`;
+
+        // Narrower stalls keep all 30 positions inside the viewport.
+        const x=49.8+c*4.05;
+        const z=-13.5+r*14.5;
+
+        const glow=new THREE.Mesh(
+          new THREE.PlaneGeometry(3.3,6.0),
+          new THREE.MeshStandardMaterial({
+            color:0x3a2b17,
+            emissive:0xff9f24,
+            emissiveIntensity:.18,
+            transparent:true,
+            opacity:.52
+          })
+        );
+
+        glow.rotation.x=-Math.PI/2;
+        glow.position.set(x,.02,z);
+        this.scene.add(glow);
+
+        [-1.68,1.68].forEach(dx=>{
+          const divider=new THREE.Mesh(
+            new THREE.BoxGeometry(.07,.03,6.1),
+            line
+          );
+          divider.position.set(x+dx,.05,z);
+          this.scene.add(divider);
+        });
+
+        this.overflowSpots.push({
+          x,
+          z,
+          rot:r%2===0?0:Math.PI,
+          glow,
+          occupied:false,
+          number
+        });
+      }
+    }
+  }
+
+  overflowSpot(number){
+    return this.overflowSpots.find(s=>s.number===number);
+  }
+
+  parkOverflowImmediate(session){
+    if(this.overflowCarMap.has(session.vehicle_identifier))return;
+
+    const spaceNumber=String(
+      session.space_number ??
+      session.overflow_space_number ??
+      ''
+    ).trim().toUpperCase();
+
+    if(!spaceNumber){
+      console.warn(
+        'Overflow session missing space assignment:',
+        session.vehicle_identifier,
+        session
+      );
+      return;
+    }
+
+    const spot=this.overflowSpot(spaceNumber);
+
+    if(!spot){
+      console.warn(
+        `Overflow space ${spaceNumber} was not found in the Three.js overflow lot`,
+        session
+      );
+      return;
+    }
+
+    const nonEmployee=session.occupant_type!=='EMPLOYEE';
+    const car=this.car(
+      this.colorFor(session.vehicle_identifier,nonEmployee),
+      nonEmployee
+    );
+
+    car.position.set(spot.x,0,spot.z);
+    car.rotation.y=spot.rot;
+
+    this.scene.add(car);
+
+    spot.occupied=true;
+    spot.glow.material.color.setHex(
+      nonEmployee ? 0x5b3510 : 0x49391c
+    );
+    spot.glow.material.emissive.setHex(
+      nonEmployee ? 0xffa62b : 0xffc24c
+    );
+
+    this.overflowCarMap.set(
+      session.vehicle_identifier,
+      {mesh:car,spot,visitor:nonEmployee}
+    );
+  }
+
+  syncOverflowSessions(sessions){
+    const active=new Set(
+      sessions.map(s=>s.vehicle_identifier)
+    );
+
+    for(const [id,item] of this.overflowCarMap){
+      if(active.has(id))continue;
+
+      this.scene.remove(item.mesh);
+      item.spot.occupied=false;
+      item.spot.glow.material.color.setHex(0x3a2b17);
+      item.spot.glow.material.emissive.setHex(0xff9f24);
+      this.overflowCarMap.delete(id);
+    }
+
+    sessions.forEach(
+      session=>this.parkOverflowImmediate(session)
+    );
+
+    this.overflowSessionsInitialized=true;
+  }
+
+  queueGatePulse(gate,direction){
+    if(!gate)return;
+    if(this.gatePulsePending[direction])return;
+
+    this.gatePulsePending[direction]=true;
+
+    this.gatePulseQueue=this.gatePulseQueue
+      .then(async()=>{
+        await this.gateTo(gate,true);
+        await sleep(250);
+        await this.gateTo(gate,false);
+      })
+      .catch(err=>{
+        console.warn('Auto-run gate pulse failed:',err);
+      })
+      .finally(()=>{
+        this.gatePulsePending[direction]=false;
+      });
+  }
+
   gate(x,z,label){
     const group=new THREE.Group();group.position.set(x,0,z);
     const post=new THREE.Mesh(new THREE.BoxGeometry(1.1,3,1.1),this.mat(0x263b4c,0x117aa7,.25));post.position.y=1.5;group.add(post);
@@ -96,7 +337,7 @@ class Parking3D {
   }
   colorFor(id, visitor=false){if(visitor)return 0xffa93f;let h=0;for(const ch of id)h=(h*31+ch.charCodeAt(0))>>>0;const colors=[0x2e7cff,0x40f6a1,0xffca55,0x9b7dff,0x38c3c8,0xf07dc4,0x8ac24a,0xd8e1ea];return colors[h%colors.length];}
   spot(number){return this.spots.find(s=>s.number===number);}
-  async gateTo(g,open){g.target=open?(g.group.position.x<0?-Math.PI/2:Math.PI/2):0;await sleep(650);}
+  async gateTo(g,open){g.target=open?(g.group.position.x<0?Math.PI/2:-Math.PI/2):0;await sleep(650);}
   move(obj,points,duration){return new Promise(resolve=>{const start=performance.now(),path=[obj.position.clone(),...points];this.animations.push(now=>{const p=Math.min(1,(now-start)/duration),n=path.length-1,s=p*n,i=Math.min(n-1,Math.floor(s)),t=s-i,e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;obj.position.lerpVectors(path[i],path[i+1],e);if(p>=1){resolve();return true}return false});});}
   parkImmediate(session){
   if(this.carMap.has(session.vehicle_identifier)) return;
@@ -152,10 +393,57 @@ class Parking3D {
   });
 }
   syncSessions(sessions){
-    const active=new Set(sessions.map(s=>s.vehicle_identifier));
-    for(const [id,item] of this.carMap){if(!active.has(id)){this.scene.remove(item.mesh);item.spot.occupied=false;item.spot.glow.material.color.setHex(0x11364c);item.spot.glow.material.emissive.setHex(0x1ca9e0);this.carMap.delete(id);}}
-    sessions.forEach(s=>this.parkImmediate(s));
+    const active=new Set(
+      sessions.map(s=>s.vehicle_identifier)
+    );
+
+    const previous=new Set(
+      this.carMap.keys()
+    );
+
+    const arrivals=[
+      ...active
+    ].filter(id=>!previous.has(id));
+
+    const departures=[
+      ...previous
+    ].filter(id=>!active.has(id));
+
+    for(const [id,item] of this.carMap){
+      if(active.has(id))continue;
+
+      this.scene.remove(item.mesh);
+      item.spot.occupied=false;
+      item.spot.glow.material.color.setHex(0x11364c);
+      item.spot.glow.material.emissive.setHex(0x1ca9e0);
+      this.carMap.delete(id);
+    }
+
+    sessions.forEach(
+      session=>this.parkImmediate(session)
+    );
+
+    // First synchronization hydrates database state silently.
+    // Subsequent Auto Run transitions cycle the physical gate model.
+    if(this.mainSessionsInitialized && autoRunMode){
+      if(arrivals.length){
+        this.queueGatePulse(
+          this.entryGate,
+          'ENTRY'
+        );
+      }
+
+      if(departures.length){
+        this.queueGatePulse(
+          this.exitGate,
+          'EXIT'
+        );
+      }
+    }
+
+    this.mainSessionsInitialized=true;
   }
+
   async enter(vehicleId, spotNumber, occupantType){
     if(this.carMap.has(vehicleId))return;
     const spot=this.spot(spotNumber);if(!spot)return;
@@ -171,7 +459,20 @@ class Parking3D {
     await this.move(item.mesh,[new THREE.Vector3(17,0,0),new THREE.Vector3(17,0,30),new THREE.Vector3(17,0,47)],2400);
     this.scene.remove(item.mesh);item.spot.occupied=false;item.spot.glow.material.color.setHex(0x11364c);item.spot.glow.material.emissive.setHex(0x1ca9e0);this.carMap.delete(vehicleId);await this.gateTo(this.exitGate,false);
   }
-  cameraView(v){const views={overview:[[62,62,72],[0,0,0]],entry:[[-34,14,52],[-17,2,29]],exit:[[34,14,52],[17,2,29]]};const [p,t]=views[v]||views.overview;this.camera.position.set(...p);this.controls.target.set(...t);this.controls.update();}
+  cameraView(v){
+    const views={
+      overview:[[88,72,96],[20,0,0]],
+      entry:[[-34,14,52],[-17,2,29]],
+      exit:[[34,14,52],[17,2,29]],
+      overflow:[[102,38,52],[68,0,1]]
+    };
+
+    const [p,t]=views[v]||views.overview;
+    this.camera.position.set(...p);
+    this.controls.target.set(...t);
+    this.controls.update();
+  }
+
   resize(){const w=this.container.clientWidth,h=this.container.clientHeight;this.camera.aspect=w/Math.max(h,1);this.camera.updateProjectionMatrix();this.renderer.setSize(w,h,false);}
   render(){const now=performance.now();this.animations=this.animations.filter(fn=>!fn(now));[this.entryGate,this.exitGate].forEach(g=>{if(g)g.pivot.rotation.z+=(g.target-g.pivot.rotation.z)*.12});this.controls.update();this.renderer.render(this.scene,this.camera);}
 }
@@ -195,6 +496,264 @@ const plc=new SecurePLC(scene);
 let pendingRequest=null;
 let demoIdentifiers=null;
 let occupancyFilter='ALL';
+
+let autoRunState=null;
+let autoRunTimer=null;
+let autoRunMode=false;
+
+function setManualControlsDisabled(disabled){
+  ['detect-entry','detect-exit','restart-demo'].forEach(id=>{
+    const el=$(id);
+    if(el)el.disabled=Boolean(disabled);
+  });
+
+  const mode=$('access-mode');
+  if(mode){
+    mode.textContent=disabled?'AUTO RUN':'SECURE';
+    mode.classList.toggle('manual',!disabled);
+    mode.classList.toggle('auto',disabled);
+  }
+}
+
+function formatAutoRunPhase(value){
+  const raw=String(value||'IDLE').trim();
+  const labels={
+    IDLE:'IDLE',
+    STARTUP:'STARTUP',
+    EMPLOYEE_ARRIVAL:'EMPLOYEE ARRIVAL',
+    EMPLOYEE_DEPARTURE:'EMPLOYEE DEPARTURE',
+    CONTRACTOR_ARRIVAL:'CONTRACTOR ARRIVAL',
+    CONTRACTOR_DEPARTURE:'CONTRACTOR DEPARTURE',
+    SECURITY_REVIEW:'SECURITY REVIEW',
+    VISITOR_DEPARTURE:'VISITOR DEPARTURE',
+    OVERFLOW:'OVERFLOW',
+    OVERFLOW_FULL:'OVERFLOW FULL',
+    COMPLETE:'COMPLETE',
+    STOPPED:'STOPPED'
+  };
+  return labels[raw]||raw.replaceAll('_',' ');
+}
+
+function renderAutoRunStatus(state){
+  if(!state)return;
+
+  if($('auto-run-state')){
+    $('auto-run-state').textContent=state.active?'ACTIVE':(state.phase||'IDLE');
+  }
+
+  if($('auto-run-clock')){
+    $('auto-run-clock').textContent=`${state.sim_day||'MONDAY'} ${state.sim_time||'05:30'}`;
+  }
+
+  if($('auto-run-phase')){
+    $('auto-run-phase').textContent=formatAutoRunPhase(state.phase);
+  }
+
+  if($('auto-run-event')){
+    $('auto-run-event').textContent=state.current_event||'Waiting';
+  }
+
+  if($('auto-run-next')){
+    $('auto-run-next').textContent=state.next_event||'—';
+  }
+
+  if($('auto-run-overflow')){
+    $('auto-run-overflow').textContent=`${state.overflow??0}/${state.overflow_capacity??30}`;
+  }
+
+  if($('auto-run-contractors')){
+    $('auto-run-contractors').textContent=String(state.contractors_on_site??0);
+  }
+
+  if($('auto-run-visitors')){
+    $('auto-run-visitors').textContent=String(state.visitors_on_site??0);
+  }
+
+  if($('auto-run-employees')){
+    $('auto-run-employees').textContent=String(state.employees??0);
+  }
+
+  if($('auto-run-occupied')){
+    $('auto-run-occupied').textContent=`${state.occupied??0}/${state.capacity??70}`;
+  }
+
+  if($('auto-run-start')){
+    $('auto-run-start').disabled=Boolean(state.active);
+  }
+
+  if($('auto-run-stop')){
+    $('auto-run-stop').disabled=!state.active;
+  }
+
+  autoRunMode=Boolean(state.active);
+  setManualControlsDisabled(autoRunMode);
+}
+
+async function loadAutoRunStatus(){
+  try{
+    autoRunState=await api('/api/auto-run/status');
+    renderAutoRunStatus(autoRunState);
+    return autoRunState;
+  }catch(err){
+    log('AUTO RUN',`Unable to load auto-run status: ${err.message}`,'alarm');
+    return null;
+  }
+}
+
+async function refreshOverflowStatus(){
+  try{
+    const overflow=await api('/api/parking/overflow-status');
+
+    scene.syncOverflowSessions(
+      overflow.active_sessions||[]
+    );
+
+    if($('auto-run-overflow')){
+      $('auto-run-overflow').textContent=
+        `${overflow.occupied??0}/${overflow.capacity??30}`;
+    }
+
+    return overflow;
+  }catch(err){
+    log(
+      'OVERFLOW',
+      `Unable to synchronize overflow lot: ${err.message}`,
+      'alarm'
+    );
+    return null;
+  }
+}
+
+async function refreshAutoRun(){
+  const state=await loadAutoRunStatus();
+  if(!state)return;
+
+  try{
+    const [status,overflowStatus]=await Promise.all([
+      api('/api/parking/status'),
+      api('/api/parking/overflow-status')
+    ]);
+
+    updateStatus(status);
+
+    scene.syncOverflowSessions(
+      overflowStatus.active_sessions||[]
+    );
+
+    if($('auto-run-overflow')){
+      $('auto-run-overflow').textContent=
+        `${overflowStatus.occupied??0}/${overflowStatus.capacity??30}`;
+    }
+
+    if(!state.active && state.phase==='COMPLETE'){
+      autoRunMode=false;
+      setManualControlsDisabled(false);
+
+      if(autoRunTimer){
+        clearInterval(autoRunTimer);
+        autoRunTimer=null;
+      }
+
+      log(
+        'AUTO RUN',
+        `Cycle ${state.cycle} complete · ${state.completed_entries??0} entries · ${state.completed_exits??0} exits · ${overflowStatus.occupied??0}/${overflowStatus.capacity??30} overflow occupied.`
+      );
+    }
+
+    if(!state.active && state.phase==='STOPPED'){
+      autoRunMode=false;
+      setManualControlsDisabled(false);
+
+      if(autoRunTimer){
+        clearInterval(autoRunTimer);
+        autoRunTimer=null;
+      }
+    }
+  }catch(err){
+    log(
+      'AUTO RUN',
+      `Status sync failed: ${err.message}`,
+      'alarm'
+    );
+  }
+}
+
+async function startAutoRun(){
+  if(plc.busy || autoRunMode)return;
+
+  const button=$('auto-run-start');
+  if(button)button.disabled=true;
+
+  try{
+    setBusy(true);
+
+    await api('/api/admin/reset-demo',{method:'POST'});
+
+    plc.clearDecisionTags();
+    plc.entryGate=false;
+    plc.exitGate=false;
+    plc.scan();
+
+    hidePending();
+    closeOccupancyRoster();
+
+    const result=await api('/api/auto-run/start',{method:'POST'});
+
+    autoRunMode=true;
+    setManualControlsDisabled(true);
+
+    setAccessResult(
+      'granted',
+      'AUTO RUN ACTIVE',
+      'Accelerated workforce, contractor and visitor parking cycle started.'
+    );
+
+    $('state-text').textContent='Accelerated parking cycle in progress';
+
+    log(
+      'AUTO RUN',
+      result.message||'Accelerated simulation started.'
+    );
+
+    await refreshStatus();
+    await loadDemoIdentifiers();
+
+    if(!autoRunTimer){
+      autoRunTimer=setInterval(refreshAutoRun,750);
+    }
+
+    await refreshAutoRun();
+  }catch(err){
+    autoRunMode=false;
+    setManualControlsDisabled(false);
+    setAccessResult('denied','AUTO RUN FAILED',err.message);
+    log('AUTO RUN',err.message,'alarm');
+  }finally{
+    setBusy(false);
+    if(button && !autoRunMode)button.disabled=false;
+  }
+}
+
+async function stopAutoRun(){
+  const button=$('auto-run-stop');
+  if(button)button.disabled=true;
+
+  try{
+    const result=await api('/api/auto-run/stop',{method:'POST'});
+
+    log(
+      'AUTO RUN',
+      result.message||'Auto-run stop requested.',
+      'warning'
+    );
+
+    await refreshAutoRun();
+  }catch(err){
+    log('AUTO RUN',err.message,'alarm');
+  }finally{
+    if(button && autoRunState?.active)button.disabled=false;
+  }
+}
 
 function employeeExceptionFor(vehicleIdentifier){
   const vehicle=String(vehicleIdentifier||'').trim().toUpperCase();
@@ -289,7 +848,7 @@ async function restartDemo(){
     setAccessResult('granted','DEMO RESTARTED',result.message || 'Parking lot returned to empty demo state.');
     $('state-text').textContent='Demo reset — ready for vehicle detection';
     log('RESET',`Demo restarted; ${result.closed_sessions||0} active session(s) closed.`,'warning');
-    await refreshStatus();await refreshSecurity();await loadDemoIdentifiers();
+    await refreshStatus();await refreshOverflowStatus();await refreshSecurity();await loadDemoIdentifiers();
   }catch(err){setAccessResult('denied','RESET FAILED',err.message);log('ERROR',err.message,'alarm');}
   finally{setBusy(false);if(button)button.disabled=false;}
 }
@@ -415,7 +974,17 @@ async function denyVisitor(){if(!pendingRequest)return;const employeeException=e
 
 $('detect-entry').addEventListener('click',detectEntry);$('detect-exit').addEventListener('click',detectExit);$('approve-visitor').addEventListener('click',approveVisitor);$('deny-visitor').addEventListener('click',denyVisitor);$('estop').addEventListener('click',()=>plc.toggleEstop());$('clear-vehicle').addEventListener('click',()=>{$('vehicle-id').value='';$('vehicle-id').focus();});$('clear-log').addEventListener('click',()=>{$('log').innerHTML='';log('SYSTEM','Event buffer cleared.');});
 $('restart-demo')?.addEventListener('click',restartDemo);$('employee-occupancy')?.addEventListener('click',()=>openOccupancyRoster('EMPLOYEE'));$('visitor-occupancy')?.addEventListener('click',()=>openOccupancyRoster('VISITOR'));$('close-occupancy-modal')?.addEventListener('click',closeOccupancyRoster);$('occupancy-modal')?.addEventListener('click',e=>{if(e.target===$('occupancy-modal'))closeOccupancyRoster();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOccupancyRoster();});
+$('auto-run-start')?.addEventListener('click',startAutoRun);
+$('auto-run-stop')?.addEventListener('click',stopAutoRun);
 document.querySelectorAll('[data-camera]').forEach(b=>b.addEventListener('click',()=>scene.cameraView(b.dataset.camera)));
 $('vehicle-id').addEventListener('keydown',e=>{if(e.key==='Enter')detectEntry();});
 
-log('SYSTEM','Secure parking PLC initialized with 70-space digital twin.');log('SYSTEM',`API endpoint: ${API_BASE}`);health();loadDemoIdentifiers();setInterval(refreshStatus,10000);setInterval(refreshSecurity,12000);
+log('SYSTEM','Secure parking PLC initialized with 70-space digital twin.');
+log('SYSTEM',`API endpoint: ${API_BASE}`);
+health();
+loadDemoIdentifiers();
+loadAutoRunStatus();
+refreshOverflowStatus();
+setInterval(refreshStatus,10000);
+setInterval(refreshOverflowStatus,10000);
+setInterval(refreshSecurity,12000);
