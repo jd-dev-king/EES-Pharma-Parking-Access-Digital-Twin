@@ -1,254 +1,341 @@
-# EES Pharma Parking Access Digital Twin
+EES Pharma Parking Access Digital Twin
 
-**Version 3.0.0**
+Version 3.0.1
 
-A secure employee and visitor parking access digital twin for a pharmaceutical manufacturing facility, built as part of the **EES Industrial Universe**.
+A secure employee, contractor, and visitor parking-access digital twin
+for a pharmaceutical manufacturing facility, built as part of the EES
+Industrial Universe.
 
-The project combines a browser-based 3D parking simulation, virtual PLC logic, PostgreSQL-backed identity and access control, Security approval workflows, live parking occupancy, and an industrial HMI.
+Version 3.0.1 expands the database-integrated parking twin with a
+shift-driven accelerated Auto Run, a 30-space secured overflow
+lot, workforce-backed employee authorization, automated contractor and
+visitor scenarios, Security review events, and full secured/overflow
+occupancy visualization.
 
-The system represents the **Pharma Employee Parking Lot** and integrates with the canonical EES PostgreSQL data platform:
+The application combines:
 
-```text
+Browser-based Three.js parking simulation
+
+Virtual PLC gate logic
+
+FastAPI services
+
+PostgreSQL-backed operational state
+
+Workforce-linked employee vehicle authorization
+
+Security approval and exception workflows
+
+Shift-driven accelerated simulation
+
+70-space secured parking
+
+30-space secured overflow parking
+
+Live occupancy and parking rosters
+
+Industrial HMI visualization
+
+EES Pharma Process Twin integration
+
+The authoritative data platform is:
+
 ees_data_platform
-```
 
----
+Project Overview
 
-## Project Overview
+The EES Pharma Parking Access Digital Twin models the facility-access
+layer surrounding the EES pharmaceutical manufacturing environment.
 
-The EES Pharma Parking Access Digital Twin models a secure 70-space employee parking facility supporting:
+The parking system now manages 100 operational parking spaces:
 
-- Employee vehicle authorization
-- Employee access exceptions
-- Security overrides
-- Visitor approval
-- Temporary visitor identifiers
-- Entry and exit gate control
-- Live parking occupancy
-- Parking-space assignment
-- Security event logging
-- Virtual PLC logic
-- PostgreSQL persistence
-- Three.js 3D visualization
-- EES Universal Data Moon registration
+Parking Area                              Capacity Purpose
 
-The simulation represents the parking and perimeter-access layer surrounding the pharmaceutical manufacturing environment.
+Secured Main Lot                                70 Primary employee,
+contractor, and
+approved visitor
+parking
 
----
+Secured Overflow Lot                            30 Capacity overflow
+during shift-driven
+traffic
 
-# EES Universe Architecture
+The system supports:
 
-The Parking Access Digital Twin is one operational component of the larger EES Industrial Universe.
+Employee vehicle recognition
 
-```text
+Workforce-backed employee authorization
+
+Employee access exceptions
+
+Security overrides
+
+Contractor arrivals
+
+Visitor approval
+
+Temporary visitor identifiers
+
+Security review events
+
+Entry and exit gate control
+
+Main-lot parking assignment
+
+Overflow-lot parking assignment
+
+Live secured-lot occupancy
+
+Live overflow occupancy
+
+Shift-driven Auto Run cycles
+
+Automated arrival and departure processing
+
+Parking-space release
+
+Security event logging
+
+Virtual PLC logic
+
+PostgreSQL persistence
+
+Three.js 3D visualization
+
+Pharma Process Twin parking/security integration
+
+EES Universal Data Moon registration
+
+Manual controls remain available for deterministic testing while Auto
+Run provides a fast portfolio demonstration of a complete operating
+cycle.
+
+EES Universe Architecture
+
+The Parking Access Digital Twin is one operational component of the
+larger EES Industrial Universe.
+
                          EES INDUSTRIAL UNIVERSE
                                   │
                                   ▼
                          ees_data_platform
                           PostgreSQL Database
                                   │
-              ┌───────────────────┼───────────────────┐
-              │                   │                   │
-              ▼                   ▼                   ▼
-         power_grid.*         pharma.*         parking_access.*
-              │                                       │
-              ▼                                       ▼
-       Power Grid Sun                    Pharma Parking Access Twin
-              │                                       │
-              ▼                                       ▼
-        RC Controls                         PLC / HMI / Security
-              │                                       │
-              └───────────────┬───────────────────────┘
-                              ▼
-                         analytics / EES
-```
+              ┌───────────────────┼───────────────────────┐
+              │                   │                       │
+              ▼                   ▼                       ▼
+         power_grid.*          pharma.*              workforce.*
+                                                          │
+                                                          ▼
+                                                  parking_access.*
+                                                          │
+                                      ┌───────────────────┴───────────────────┐
+                                      ▼                                       ▼
+                         Pharma Parking Access Twin                Pharma Process Twin
+                                      │                                       │
+                                      ▼                                       ▼
+                         PLC / HMI / Security                 Security / 3D Overview
+                                      │                                       │
+                                      └───────────────────┬───────────────────┘
+                                                          ▼
+                                                   analytics / EES
 
-The parking application uses the same canonical PostgreSQL environment as the other connected EES systems.
+The shared PostgreSQL platform remains the authoritative data source for
+EES operational data. Parking Access uses the parking_access domain
+while employee identity and employment state are linked to the shared
+workforce model.
 
----
+Technology Stack
 
-# Technology Stack
+Frontend
 
-## Frontend
+HTML5
 
-- HTML5
-- CSS3
-- JavaScript
-- Three.js
-- Browser-based virtual PLC
-- Industrial HMI interface
+CSS3
 
-## Backend
+JavaScript
 
-- Python
-- FastAPI
-- Uvicorn
-- Psycopg
-- PostgreSQL
+Three.js
 
-## Database
+Browser-based virtual PLC
 
-- PostgreSQL 14
-- Canonical database:
+Industrial HMI
 
-```text
-ees_data_platform
-```
+Accelerated simulation controls
 
-## EES Integration
+Secured and overflow parking visualization
 
-- `ees_registry`
-- `parking_access`
-- Future Smart Assistant AI integration
-- Future Manufacturing Intelligence analytics
-- Future Power Grid / facility cross-domain events
+Backend
 
----
+Python
 
-# Major Features
+FastAPI
 
-## 1. 70-Space Pharma Employee Parking Lot
+Uvicorn
 
-The Three.js environment presents a secure pharmaceutical employee parking facility containing 70 managed parking spaces.
+Psycopg
 
-The HMI displays:
+Psycopg connection pooling
 
-- Current occupancy
-- Remaining capacity
-- Employee count
-- Visitor count
-- Lot full state
-- Lot empty state
+PostgreSQL
 
----
+Database
 
-## 2. Employee Vehicle Authorization
+PostgreSQL
 
-Employee vehicle identities are stored in PostgreSQL.
+Canonical database: ees_data_platform
 
-Example authorized vehicle:
+Parking schema: parking_access
 
-```text
-EMP-1001-A
-```
+Workforce integration: workforce
 
-The access system validates the vehicle against:
+EES Integration
 
-```text
-parking_access.employee_vehicles
-```
+ees_registry
 
-and its associated employee record.
+workforce
 
-Normal authorized employees receive automatic entry authorization when space is available.
+parking_access
 
----
+EES Pharma Process Twin
 
-## 3. Employee Access Exception Workflow
+EES Universal Data Moon
 
-Employees who are known to the system but do not currently meet normal parking authorization requirements are **not classified as visitors**.
+Future Smart Assistant AI integration
+
+Future Manufacturing Intelligence analytics
+
+Future Power Grid / facility cross-domain events
+
+Major Features
+
+1. 70-Space Secured Main Lot
+
+The Three.js environment presents a controlled pharmaceutical employee
+parking facility containing 70 secured parking spaces.
+
+The HMI tracks:
+
+Secured occupancy
+
+Secured spaces available
+
+Employee count
+
+Contractor count
+
+Visitor count
+
+Lot full state
+
+Lot empty state
+
+When the secured lot reaches capacity, eligible incoming Auto Run
+traffic can be routed to the overflow lot rather than being discarded.
+
+2. 30-Space Secured Overflow Lot
+
+Version 3.0.1 adds a dedicated 30-space overflow parking area.
+
+The overflow lot is operational rather than decorative. Overflow
+assignments are represented as real parking state and are visible in the
+Three.js scene.
+
+The system tracks:
+
+Secured Lot       0 / 70
+Overflow Lot      0 / 30
+Total Parked      0 / 100
+
+Overflow processing supports:
+
+Overflow space allocation
+
+Persistent overflow assignments
+
+Vehicle visualization
+
+Overflow occupancy counters
+
+Overflow departure processing
+
+Overflow space release
+
+Auto Run routing
+
+Security/overview integration
+
+The main and overflow lots are visually separated in the 3D scene and
+use distinct parking-space presentations.
+
+3. Workforce-Backed Employee Vehicle Authorization
+
+Employee parking authorization is linked to the EES workforce model
+rather than relying only on isolated parking demo identities.
+
+Registered employee vehicles are associated with workforce employees,
+allowing Parking Access to evaluate operational workforce attributes
+such as:
+
+Employee number
+
+Display name
+
+Employment status
+
+Employment type
+
+Commute mode
+
+Parking authorization
+
+Active vehicle registration
+
+A recognized employee vehicle can receive automatic access when:
+
+Employment Status = ACTIVE
+Commute Mode      = VEHICLE
+Parking Authorized = TRUE
+
+and parking capacity is available.
+
+This keeps employee identity authoritative across EES systems while
+allowing the parking domain to retain vehicle and parking-specific
+state.
+
+4. Employee Access Exception Workflow
+
+Known employees who do not meet normal parking authorization
+requirements are not converted into visitors.
 
 Examples include:
 
-- Parking authorization suspended
-- Employee on leave
-- Inactive employee record
+Employee on leave
 
-These requests become:
+Inactive employee
 
-```text
-EMPLOYEE ACCESS EXCEPTION
-```
+Parking authorization suspended
 
-and are routed to the Security Desk.
+Employee not assigned to vehicle parking
 
-Security may then:
+These requests become an employee access exception and are routed to
+Security.
 
-```text
+Security can:
+
 Approve Employee Override + Open Gate
-```
 
 or:
 
-```text
 Deny Employee Access
-```
 
-This allows realistic pharmaceutical-facility exceptions such as an employee returning while on leave to:
+Approved employee overrides remain classified as employee parking
+sessions and do not consume visitor credentials.
 
-- Return company equipment
-- Attend an occupational-health appointment
-- Attend a conference or training event
-- Meet management or Human Resources
-- Complete administrative requirements
-- Perform an approved temporary facility visit
-
-The employee remains classified as an **employee** throughout the workflow and does not consume a visitor ID.
-
----
-
-# Demo Employee Records
-
-The v3.0.0 database includes 15 demonstration employee identities.
-
-## Authorized Employees
-
-```text
-EES-PH-1001    Avery Chen
-EES-PH-1002    Morgan Reyes
-EES-PH-1003    Jordan Patel
-EES-PH-1004    Taylor Brooks
-EES-PH-1005    Cameron Diaz
-EES-PH-1006    Riley Thompson
-EES-PH-1007    Casey Nguyen
-EES-PH-1008    Drew Wallace
-EES-PH-1009    Alexis Martin
-EES-PH-1010    Samir Shah
-EES-PH-1011    Jamie Rivera
-EES-PH-1012    Devon Clarke
-```
-
-Example registered vehicle identifiers:
-
-```text
-EMP-1001-A
-EMP-1002-A
-EMP-1003-A
-EMP-1004-A
-EMP-1005-A
-EMP-1006-A
-EMP-1007-A
-EMP-1008-A
-EMP-1009-A
-EMP-1010-A
-EMP-1011-A
-EMP-1012-A
-```
-
-## Security Review Demonstration Records
-
-```text
-EMP-1088-X
-Parking Suspended Demo
-
-EMP-1098-X
-Employee On Leave Demo
-
-EMP-1099-X
-Inactive Employee Demo
-```
-
-These records allow the Security override workflow to be demonstrated without modifying real employee data.
-
----
-
-# Visitor Access Workflow
+5. Visitor Access Workflow
 
 Unknown vehicle identifiers do not receive automatic entry.
 
-Instead:
-
-```text
 Unknown Vehicle
       │
       ▼
@@ -262,51 +349,227 @@ Security Review
       └── Approve Visitor
                │
                ▼
-       Assign Next VIS-####
+        Assign VIS-####
                │
                ▼
-          Open Entry Gate
-```
+        Open Entry Gate
+               │
+               ▼
+        Create Parking Session
 
-Visitor IDs are allocated from a PostgreSQL-backed visitor pool.
+Visitor IDs are allocated from the PostgreSQL-backed visitor pool.
 
-Examples:
+Visitor sessions remain independently classified from employee and
+contractor traffic.
 
-```text
-VIS-0001
-VIS-0002
-VIS-0003
-...
-```
+6. Contractor Traffic
 
-The next available identifier is automatically selected when Security approves a visitor.
+The accelerated operating cycle includes planned contractor arrivals.
 
----
+Contractors are tracked independently so the HMI and integrated Pharma
+Process views can distinguish:
 
-# Visitor ID Quarantine
+Employees
+Contractors
+Visitors
 
-Visitor identifiers are not immediately recycled after a visitor exits.
+Contractor traffic participates in normal parking-capacity decisions and
+can be routed to overflow when required by the simulated operating
+cycle.
 
-Following exit, the identifier can enter a temporary quarantine state before becoming available for reuse.
+Shift-Driven Accelerated Auto Run
 
-This supports:
+Version 3.0.1 introduces the production demonstration mode for
+accelerated shift-driven parking simulation.
 
-- Auditability
-- Security investigation
-- Reduced identifier collision
-- Cleaner access-history reconstruction
+The purpose is to let a portfolio visitor observe a complete facility
+parking cycle quickly instead of waiting through real-world shift
+durations.
 
----
+The Auto Run executes a compressed operational schedule that can
+include:
 
-# Parking Entry Workflow
+Shift preparation
+      │
+      ▼
+Employee arrivals
+      │
+      ▼
+Contractor arrivals
+      │
+      ▼
+Visitor / Security scenarios
+      │
+      ▼
+Secured lot reaches capacity
+      │
+      ▼
+Overflow routing
+      │
+      ▼
+Shift occupancy
+      │
+      ▼
+Vehicle departures
+      │
+      ▼
+Overflow departures
+      │
+      ▼
+Lot returns to empty
+      │
+      ▼
+Cycle complete
 
-For an authorized employee:
+Auto Run HMI
 
-```text
+The Accelerated Simulation panel displays live state including:
+
+Auto Run active/inactive state
+
+Simulation cycle
+
+Simulated day
+
+Simulation clock
+
+Current phase
+
+Current event
+
+Next event
+
+Secured-lot occupancy
+
+Employee count
+
+Contractor count
+
+Visitor count
+
+Overflow occupancy
+
+Completed entries
+
+Completed exits
+
+Typical phases include operational events such as:
+
+EMPLOYEE_ARRIVAL
+CONTRACTOR_ARRIVAL
+VISITOR_ARRIVAL
+OVERFLOW
+DEPARTURE
+COMPLETE
+
+The exact phase sequence is driven by the backend simulation schedule.
+
+Accelerated Demonstration Design
+
+Auto Run intentionally operates faster than real time.
+
+It is designed to demonstrate:
+
+Shift-change congestion
+
+Employee authorization
+
+Contractor arrivals
+
+Visitor Security review
+
+Main-lot saturation
+
+Overflow routing
+
+Entry gate operation
+
+Exit gate operation
+
+Occupancy changes
+
+Departure processing
+
+Full-cycle recovery to an empty lot
+
+This is a simulation feature for portfolio and systems-integration
+demonstration; it is not a real facility scheduling engine.
+
+Overflow Routing Logic
+
+When the secured 70-space lot has available capacity, vehicles are
+assigned there first.
+
+When the secured lot reaches capacity:
+
+Incoming Authorized Vehicle
+          │
+          ▼
+Secured Lot Full?
+     │          │
+    NO         YES
+     │          │
+     ▼          ▼
+Main Lot    Overflow Available?
+                 │          │
+                YES         NO
+                 │          │
+                 ▼          ▼
+           Overflow Lot   Capacity Event
+
+Overflow assignments remain visible and operational until the associated
+vehicle departs.
+
+The combined capacity is:
+
+70 secured + 30 overflow = 100 total spaces
+
+Entry and Exit Gate Visualization
+
+Both manual and Auto Run transactions drive the parking gate
+visualization.
+
+During an authorized entry:
+
+Vehicle is detected.
+
+Authorization is evaluated.
+
+Parking destination is determined.
+
+Entry gate opens.
+
+Vehicle is assigned to the secured or overflow lot.
+
+Gate returns to its secure state.
+
+During exit:
+
+Vehicle is detected at exit.
+
+Active parking assignment is located.
+
+Exit is authorized.
+
+Exit gate opens.
+
+Parking session is closed.
+
+Main or overflow space is released.
+
+Gate returns to its secure state.
+
+The gate animation is synchronized with the accelerated demonstration so
+visitors can see access-control activity during Auto Run.
+
+Parking Entry Workflow
+
+For a normally authorized employee:
+
 Vehicle Detected
       │
       ▼
-Database Lookup
+Workforce + Vehicle Lookup
       │
       ▼
 Employee Vehicle Found
@@ -315,33 +578,39 @@ Employee Vehicle Found
 Employee Active?
       │
       ▼
+Vehicle Commute?
+      │
+      ▼
 Parking Authorized?
       │
       ▼
-Space Available?
+Parking Capacity?
+      │
+      ├── Main Lot Available ──► Assign Secured Space
+      │
+      └── Main Lot Full ───────► Evaluate Overflow
+                                      │
+                                      ▼
+                                Assign Overflow Space
       │
       ▼
 Entry Gate Opens
       │
       ▼
-Parking Space Assigned
-      │
-      ▼
 Parking Session Created
       │
       ▼
-Occupancy +1
-```
+Occupancy Updated
 
----
+Parking Exit Workflow
 
-# Parking Exit Workflow
-
-```text
 Vehicle Detected at Exit
         │
         ▼
-Locate Active Parking Session
+Locate Active Parking Assignment
+        │
+        ▼
+Identify Secured / Overflow Destination
         │
         ▼
 Authorize Exit
@@ -353,84 +622,81 @@ Open Exit Barrier
 Close Parking Session
         │
         ▼
-Release Parking Space
+Release Assigned Space
         │
         ▼
-Occupancy -1
-```
+Update Occupancy
 
 Visitor sessions additionally update the visitor-pass lifecycle.
 
----
+Live Occupancy
 
-# Live Occupancy
-
-The HMI provides a live database-backed occupancy display.
+The HMI provides live database-backed parking state for the combined
+facility.
 
 Example:
 
-```text
-LIVE OCCUPANCY
+SECURED LOT
+70 / 70
 
-12 / 70
+OVERFLOW
+11 / 30
 
-58 spaces available
-```
+TOTAL PARKED
+81 / 100
 
-Separate counters are maintained for:
+Separate occupant counters are maintained for:
 
-```text
 Employees
+
+Contractors
+
 Visitors
-```
 
-Both counters are interactive.
+The system can expose active parking assignments with information such
+as:
 
-Clicking **Employees** displays employees currently inside the parking lot.
+Employee or temporary identity
 
-Clicking **Visitors** displays visitors currently inside the parking lot.
+Vehicle identifier
 
-The live roster includes information such as:
+Occupant classification
 
-- Employee or visitor identity
-- Vehicle identifier
-- Assigned parking space
-- Occupant classification
-- Entry timestamp
+Parking area
 
----
+Assigned space
 
-# Restart Demo / Reset Lot
+Entry timestamp
+
+Session state
+
+Restart Demo / Reset Lot
 
 The Live Occupancy panel includes:
 
-```text
 Restart Demo / Reset Lot
-```
 
-This function returns the simulator to a clean demonstration state.
+This returns the simulator to a clean demonstration state while
+preserving historical audit information.
 
-It:
+The reset process returns the operational view to:
 
-- Closes active demo parking sessions
-- Releases occupied parking spaces
-- Clears pending Security requests
-- Returns applicable visitor IDs to the available pool
-- Resets employee occupancy
-- Resets visitor occupancy
-- Returns the HMI count to `0 / 70`
+Secured       0 / 70
+Overflow      0 / 30
+Total         0 / 100
+Employees     0
+Contractors   0
+Visitors      0
 
-Historical database events remain available for audit and demonstration purposes.
+It also clears or closes applicable active simulation state so a new
+demonstration can begin cleanly.
 
----
-
-# Virtual PLC
+Virtual PLC
 
 The application includes a browser-based virtual PLC scan.
 
-Example PLC tags include:
+Representative PLC tags include:
 
-```text
 Vehicle_Detected
 Employee_Vehicle
 Visitor_Vehicle
@@ -440,32 +706,26 @@ Entry_Gate_Open
 Exit_Gate_Open
 Car_Count
 Spots_Remaining
-```
 
 The PLC executes on an approximately:
 
-```text
 100 ms
-```
 
 browser simulation cycle.
 
 The HMI displays the scan counter and current logical states.
 
----
-
-# Secure Entry Logic
+Secure Entry Logic
 
 Conceptually, entry authorization follows:
 
-```text
 Vehicle_Detected
        │
        ▼
-   DB LOOKUP
+Identity / Vehicle Lookup
        │
        ▼
-Employee Authorization
+Authorization
        │
        ├──────────────┐
        │              │
@@ -475,173 +735,202 @@ Normal Access    Security Override
        └───────OR─────┘
                │
                ▼
-       AND NOT Lot_Full
+        Parking Capacity
                │
                ▼
-       AND NOT Emergency_Stop
+        Main or Overflow
+               │
+               ▼
+     AND NOT Emergency_Stop
                │
                ▼
         Entry_Gate_Open
-```
 
 This models a simplified IEC 61131-3-style industrial control workflow.
 
----
-
-# Holographic HMI
+Holographic HMI
 
 The industrial HMI displays:
 
-- Entry gate status
-- Exit gate status
-- Lot full state
-- Lot empty state
-- Database state
-- Visitor ID availability
-- PLC scan count
-- Live occupancy
-- Employee occupancy
-- Visitor occupancy
-- Access-control decisions
-- Security requests
+Entry gate status
 
----
+Exit gate status
 
-# Emergency Stop
+Main-lot full state
+
+Main-lot empty state
+
+Database state
+
+Visitor ID availability
+
+PLC scan count
+
+Secured occupancy
+
+Overflow occupancy
+
+Total parking capacity
+
+Employee occupancy
+
+Contractor occupancy
+
+Visitor occupancy
+
+Access-control decisions
+
+Security requests
+
+Auto Run state
+
+Simulation phase
+
+Simulation clock
+
+Current event
+
+Next event
+
+Emergency Stop
 
 The HMI includes an Emergency Stop control.
 
-When active, access-control gate commands are prevented from energizing regardless of authorization state.
+When active, access-control gate commands are prevented from energizing
+regardless of authorization state.
 
-This models the safety-priority behavior expected from industrial control systems.
+This models the safety-priority behavior expected from industrial
+control systems.
 
----
+PostgreSQL Data Model
 
-# PostgreSQL Schema
+The parking domain uses:
 
-The project uses:
-
-```text
 parking_access
-```
 
 inside:
 
-```text
 ees_data_platform
-```
 
-Core objects include:
+Core parking objects include data for:
 
-```text
-parking_access.employees
-parking_access.employee_vehicles
-parking_access.parking_spaces
-parking_access.parking_sessions
-parking_access.visitor_passes
-parking_access.security_requests
-parking_access.security_actions
-parking_access.access_events
-```
+Employee vehicle registration
 
----
+Parking spaces
 
-# Employees
+Parking sessions
 
-Employee master information includes fields such as:
+Visitor passes
 
-```text
-employee_number
-display_name
-employment_status
-parking_authorized
-```
+Security requests
 
-Example:
+Security actions
 
-```text
-EES-PH-1001
-Avery Chen
-ACTIVE
-true
-```
+Access events
 
----
+Overflow parking state
 
-# Employee Vehicles
+Accelerated simulation state
 
-Registered vehicles are linked back to employees.
+Employee identity and employment state are linked to the shared
+workforce domain.
 
-Example:
+This architecture keeps business and operational data in the canonical
+EES PostgreSQL platform instead of making browser state authoritative.
 
-```text
-Employee:
-EES-PH-1001
+Parking Sessions
 
-Vehicle:
-EMP-1001-A
+A successful parking transaction creates an operational parking
+assignment/session.
 
-Make:
-Honda
+The session can track:
 
-Model:
-Accord
+Vehicle identifier
 
-Color:
-Blue
-```
+Occupant type
 
----
+Employee vehicle reference when applicable
 
-# Parking Sessions
+Visitor pass when applicable
 
-Each successful entry creates a parking session.
+Parking destination
 
-The session tracks:
+Parking space
 
-- Vehicle identifier
-- Occupant type
-- Parking space
-- Entry timestamp
-- Exit timestamp
-- Session status
-- Visitor pass when applicable
+Entry timestamp
 
-An active session represents a vehicle currently inside the parking lot.
+Exit timestamp
 
----
+Session status
 
-# Security Requests
+Security request when applicable
 
-Security exceptions are persisted so authorization decisions are auditable.
+An active assignment represents a vehicle currently parked in either the
+secured or overflow facility.
 
-Requests can represent:
+Security Requests
 
-```text
+Security exceptions are persisted so authorization decisions remain
+auditable.
+
+Requests can represent scenarios such as:
+
 UNKNOWN VISITOR
-```
 
 or:
 
-```text
 EMPLOYEE ACCESS EXCEPTION
-```
 
-Security actions record whether the request was approved or denied.
+Auto Run can also generate visitor/Security activity so the Security
+workflow is visible during an accelerated demonstration.
 
----
+Security actions record approval or denial decisions.
 
-# EES Universal Data Moon Registration
+Pharma Process Twin Integration
 
-The Parking Access Digital Twin registers itself with:
+Parking Access publishes facility parking state for the EES Pharma
+Process Twin.
 
-```text
-ees_registry.systems
-```
+The Pharma Process Security Command Center and 3D facility overview can
+display:
 
-using:
+Secured-lot occupancy
 
-```text
+Overflow-lot occupancy
+
+Total parked
+
+Total available
+
+Employees on site
+
+Contractors on site
+
+Visitors on site
+
+Pending Security reviews
+
+Auto Run state
+
+Auto Run phase
+
+Simulation clock
+
+Active secured assignments
+
+Active overflow assignments
+
+This allows the parking subsystem to remain independently deployable
+while presenting its operational state inside the larger Pharma Process
+environment.
+
+EES Universal Data Moon Registration
+
+The Parking Access Digital Twin registers itself with the EES registry
+using the facility-access domain.
+
+Representative identity:
+
 system_name:
 EES Pharma Parking Access Digital Twin
 
@@ -656,377 +945,278 @@ industrial-access-digital-twin
 
 primary_database:
 ees_data_platform
-```
 
-Parking datasets are also registered with the EES dataset registry.
+This allows other EES systems to discover the Parking Twin
+programmatically.
 
-This allows the Universal Data Moon and future EES systems to discover the Parking Twin programmatically.
+Local Installation
 
----
-
-# Local Installation
-
-## Requirements
+Requirements
 
 Recommended:
 
-```text
-Python 3.12+
-PostgreSQL 14+
+Python 3.10+
+PostgreSQL
 Modern web browser
-```
 
----
+1. Enter the Project
 
-## 1. Enter the Project
+cd '/Users/your-user/Documents/GitHub/EES Universe/EES-Pharma-Parking-Access-Digital-Twin'
 
-```bash
-cd '/Users/your-user/Documents/GitHub/EES Universe/EES-Pharma-Parking-Access-Digital-Twin-v3.0.0'
-```
+2. Create and Activate the Python Environment
 
----
+From the backend directory or according to your local environment
+layout:
 
-## 2. Create the Python Environment
-
-```bash
-python3.12 -m venv .venv
-```
-
-Activate:
-
-```bash
+python3 -m venv .venv
 source .venv/bin/activate
-```
 
----
+3. Install Backend Dependencies
 
-## 3. Install Backend Dependencies
-
-```bash
 cd backend
 pip install -r requirements.txt
-```
 
----
+4. Configure PostgreSQL
 
-## 4. Configure PostgreSQL
+Create or update:
 
-Create:
-
-```text
 backend/.env
-```
 
 Example:
 
-```env
 DATABASE_URL=postgresql://your_postgres_user@localhost:5432/ees_data_platform
-
 API_HOST=0.0.0.0
 API_PORT=8001
-
 CORS_ORIGINS=http://localhost:5501,http://127.0.0.1:5501
-```
 
-Do not commit `.env` files containing production credentials.
+Do not commit .env files containing credentials.
 
----
+Operational/database data for production should be managed through the
+authoritative PostgreSQL platform rather than treating local seed files
+as the production source of truth.
 
-## 5. Initialize the Database
-
-From:
-
-```text
-backend/
-```
-
-run:
-
-```bash
-python init_db.py
-```
-
-Expected output resembles:
-
-```text
-Initialized ees_data_platform.parking_access with 70 spaces,
-15 demo employees/vehicles,
-50 visitor IDs,
-and Data Moon registration.
-```
-
----
-
-# Running the Application
+Running the Application
 
 Two local processes are required.
 
-## Terminal 1 — FastAPI Backend
+Terminal 1 --- FastAPI Backend
 
-From the project:
-
-```bash
-source .venv/bin/activate
 cd backend
-```
-
-Run:
-
-```bash
+source .venv/bin/activate
 python -m uvicorn main:app --host 127.0.0.1 --port 8001
-```
 
-API:
+Backend:
 
-```text
-http://localhost:8001
-```
+http://127.0.0.1:8001
 
----
-
-## Terminal 2 — Frontend
+Terminal 2 --- Frontend
 
 From the project root:
 
-```bash
 python3 -m http.server 5501
-```
 
 Application:
 
-```text
-http://localhost:5501
-```
+http://127.0.0.1:5501
 
----
+API Verification
 
-# API Health
+Health:
 
-Verify the backend with:
+curl -s http://127.0.0.1:8001/api/health | python3 -m json.tool
 
-```bash
-curl http://localhost:8001/api/health
-```
+Demo/workforce identifiers:
 
-Demo identifiers:
+curl -s http://127.0.0.1:8001/api/demo/identifiers | python3 -m json.tool
 
-```bash
-curl http://localhost:8001/api/demo/identifiers
-```
+Parking status:
 
----
+curl -s http://127.0.0.1:8001/api/parking/status | python3 -m json.tool
 
-# Demonstration Workflow
+Auto Run status:
 
-A recommended demonstration sequence is:
+curl -s http://127.0.0.1:8001/api/auto-run/status | python3 -m json.tool
 
-### Authorized employee
+Use the application's currently implemented API routes as the
+authoritative endpoint list if routes change in later releases.
 
-```text
-EMP-1001-A
-```
+Demonstration Workflows
 
-1. Detect at Entry
-2. Authorization succeeds
-3. Entry barrier opens
-4. Space is assigned
-5. Occupancy increases
-6. Detect at Exit
-7. Exit barrier opens
-8. Session closes
-9. Occupancy decreases
+Manual Authorized Employee
 
-### Parking-suspended employee
+Select or enter a known authorized employee vehicle.
 
-```text
-EMP-1088-X
-```
+Detect at Entry.
 
-1. Detect at Entry
-2. Employee is identified
-3. Normal authorization fails
-4. Security Review appears
-5. Security may approve an Employee Override or deny access
+Workforce and parking authorization succeed.
 
-### Employee on leave
+Entry barrier opens.
 
-```text
-EMP-1098-X
-```
+A parking destination is assigned.
 
-Use the same Security override workflow.
+Occupancy increases.
 
-### Inactive employee
+Detect at Exit.
 
-```text
-EMP-1099-X
-```
+Exit barrier opens.
 
-Use the same Security override workflow.
+Session closes.
 
-### Visitor
+Occupancy decreases.
+
+Manual Employee Exception
+
+Use a known employee whose employment or parking state requires Security
+review.
+
+Detect at Entry.
+
+Employee identity is recognized.
+
+Normal authorization fails.
+
+Security Review appears.
+
+Security approves an employee override or denies access.
+
+Approved access remains classified as an employee session.
+
+Manual Visitor
 
 Enter an unknown vehicle identifier.
 
-1. Vehicle remains at closed entry barrier
-2. Security request is generated
-3. Next available `VIS-####` is shown
-4. Security approves or denies access
-5. Approved visitor receives the identifier
-6. Gate opens
-7. Visitor parking session begins
+Vehicle remains at the closed entry barrier.
 
----
+Security request is generated.
 
-# Current Simulation Mode
+The next available visitor identifier is presented.
 
-Version 3.0.0 uses **operator-triggered simulation controls**.
+Security approves or denies access.
 
-Entry and exit events are initiated through:
+Approved visitor receives the temporary identifier.
 
-```text
-Detect at Entry
-Detect at Exit
-```
+Gate opens.
 
-This makes demonstrations deterministic and allows individual database, PLC, Security, and HMI states to be inspected during each transaction.
+Visitor parking session begins.
 
-The previous prototype included automated vehicle-cycle behavior. Automatic traffic simulation is intentionally not enabled in the current database-integrated release.
+Accelerated Shift Auto Run
 
----
+Reset the lot if required.
 
-# Planned Automatic Simulation Mode
+Select Start Auto Run.
 
-A future release can reintroduce:
+Observe simulated shift time advance.
 
-```text
-MANUAL / AUTO
-```
+Employee arrivals begin.
 
-simulation modes.
+Contractor traffic is processed.
 
-Auto mode is expected to generate controlled traffic from the PostgreSQL demo population and automatically execute:
+Visitor/Security scenarios are generated.
 
-```text
-Employee arrival
-→ identity detection
-→ authorization
-→ parking
-→ dwell interval
-→ exit
-```
+Main-lot occupancy increases.
 
-while occasionally generating:
+When the secured lot reaches 70/70, additional eligible traffic is
+routed to overflow.
 
-- Parking-suspended employee scenarios
-- Employee-on-leave scenarios
-- Unknown visitor arrivals
-- Security approval scenarios
-- Security denial scenarios
-- Parking-capacity events
-- Gate faults
+Overflow vehicles appear in the 30-space overflow lot.
 
-Manual mode will remain available for deterministic portfolio demonstrations.
+Departure processing releases secured and overflow spaces.
 
----
+The simulation returns the facility to an empty state.
 
-# Suggested Future Enhancements
+Auto Run reports the cycle as complete and ready for replay.
 
-Planned EES integration opportunities include:
+Manual and Auto Modes
 
-- Automated vehicle traffic mode
-- Shift-change traffic simulation
-- Pharma employee schedule integration
-- Smart Assistant AI parking queries
-- Manufacturing Intelligence parking analytics
-- Security dashboard analytics
-- Parking demand forecasting
-- EV charging spaces
-- ADA / reserved space modeling
-- Contractor parking
-- Delivery vehicle security
-- Parking-space reservation
-- Badge reader simulation
-- License-plate recognition simulation
-- PLC ladder/FBD visualization
-- Power Grid Sun parking electrical loads
-- Camera/security telemetry
-- Access anomaly detection
-- Multi-lot Pharma campus support
+Version 3.0.1 supports both operational demonstration styles.
 
----
+Manual Mode
 
-# Smart Assistant AI Integration
+Manual mode is intended for deterministic inspection of:
 
-The future EES Smart Assistant AI will be able to query parking information through the EES data platform.
+Individual vehicle authorization
 
-Examples:
+Employee exceptions
 
-```text
-How many employees are currently parked?
-```
+Visitor Security review
 
-```text
-Which visitors are currently inside the Pharma lot?
-```
+Gate behavior
 
-```text
-How many spaces remain?
-```
+Parking assignment
 
-```text
-Was EMP-1098-X approved by Security today?
-```
+Exit behavior
 
-```text
-Show today's denied parking requests.
-```
+Database persistence
 
-This will allow Parking Access to become another operational domain available to the EES intelligence layer.
+Auto Run
 
----
+Auto Run is intended for a rapid end-to-end portfolio demonstration.
 
-# Security Design
+It uses a shift-driven schedule to show how parking access behaves as a
+connected operational system under changing demand.
 
-The project demonstrates an important distinction between:
+Manual controls remain available after the automated cycle completes.
 
-```text
+Security Design
+
+The project demonstrates the distinction between:
+
 Identity
 Authorization
 Security Override
-```
+Parking Destination
 
-A known employee remains an employee even when their normal parking authorization fails.
+A known employee remains an employee even when normal parking
+authorization fails.
 
 A visitor remains a separate temporary identity class.
 
-This prevents employee exceptions from being incorrectly converted into visitor identities and preserves a cleaner audit trail.
+Overflow is a parking destination, not an occupant classification. A
+vehicle routed to overflow retains its employee, contractor, or visitor
+identity.
 
----
+This preserves cleaner operational and audit semantics.
 
-# Pharmaceutical Manufacturing Context
+Pharmaceutical Manufacturing Context
 
-Although this project is a portfolio-scale digital twin, the design reflects concepts relevant to controlled pharmaceutical manufacturing environments:
+Although this project is a portfolio-scale digital twin, the design
+reflects concepts relevant to controlled pharmaceutical manufacturing
+environments:
 
-- Controlled site access
-- Employee identity management
-- Visitor management
-- Security review
-- Auditability
-- Restricted-access workflows
-- Event traceability
-- Separation of operational roles
-- Industrial HMI visualization
-- Database-backed system state
+Controlled site access
 
-The simulator does not represent a validated production access-control system and should not be used as one.
+Employee identity management
 
----
+Visitor management
 
-# Repository Structure
+Contractor access
 
-```text
-EES-Pharma-Parking-Access-Digital-Twin-v3.0.0/
+Security review
+
+Auditability
+
+Restricted-access workflows
+
+Event traceability
+
+Shift-change operations
+
+Capacity management
+
+Separation of operational roles
+
+Industrial HMI visualization
+
+Database-backed system state
+
+Cross-system facility visibility
+
+The simulator does not represent a validated production access-control
+system and should not be used as one.
+
+Repository Structure
+
+EES-Pharma-Parking-Access-Digital-Twin/
 │
 ├── index.html
 ├── style.css
@@ -1038,83 +1228,158 @@ EES-Pharma-Parking-Access-Digital-Twin-v3.0.0/
 └── backend/
     ├── main.py
     ├── db.py
-    ├── init_db.py
     ├── requirements.txt
     ├── .env.example
-    │
-    └── sql/
-        └── ...
-```
+    └── ...
 
----
+Version 3.0.1 Highlights
 
-# Version 3.0.0 Highlights
-
-Version 3.0.0 transitions the original parking PLC demonstration into a database-integrated Pharma facility digital twin.
+Version 3.0.1 expands the database-integrated parking twin into a
+complete accelerated facility parking demonstration.
 
 Major improvements include:
 
-- Pharma employee parking context
-- Canonical `ees_data_platform` integration
-- `parking_access` PostgreSQL schema
-- 70 managed parking spaces
-- Seeded employee and vehicle identities
-- Security exception workflows
-- Employee Security overrides
-- Visitor ID pool
-- Visitor badge lifecycle
-- Database-backed occupancy
-- Employee/visitor live roster
-- Restart Demo / Reset Lot
-- Entry and exit persistence
-- EES Data Moon registration
-- FastAPI backend
-- Three.js parking environment
-- Browser virtual PLC
-- Industrial HMI
-- Access event audit trail
+Shift-driven accelerated Auto Run
 
----
+Compressed full operating-cycle demonstration
 
-# Author
+70-space secured main lot
+
+30-space secured overflow lot
+
+100-space combined operational capacity
+
+Persistent overflow assignments
+
+Visible overflow vehicles in the Three.js scene
+
+Overflow arrival and departure processing
+
+Main-to-overflow routing when the secured lot is full
+
+Employee arrival simulation
+
+Contractor arrival simulation
+
+Visitor/Security scenarios
+
+Live Auto Run phase and simulation clock
+
+Current-event and next-event HMI reporting
+
+Automated entry and exit gate visualization
+
+Workforce-backed employee authorization
+
+Employee access exception preservation
+
+Live employee, contractor, and visitor counts
+
+Secured, overflow, and total parking metrics
+
+Pharma Process Security Command Center integration
+
+Pharma Process 3D overview integration
+
+Database-backed operational state
+
+Virtual PLC and industrial HMI integration
+
+Audit-oriented Security workflows
+
+Suggested Future Enhancements
+
+Potential future EES integration opportunities include:
+
+Smart Assistant AI parking queries
+
+Manufacturing Intelligence parking analytics
+
+Parking demand forecasting
+
+Shift schedule optimization
+
+EV charging spaces
+
+ADA / reserved space modeling
+
+Delivery vehicle security
+
+Parking-space reservation
+
+Badge reader simulation
+
+License-plate recognition simulation
+
+PLC ladder/FBD visualization
+
+Power Grid Sun parking electrical loads
+
+Camera/security telemetry
+
+Access anomaly detection
+
+Multi-lot Pharma campus expansion
+
+Smart Assistant AI Integration
+
+A future EES Smart Assistant AI can query parking information through
+the EES data platform.
+
+Examples:
+
+How many employees are currently parked?
+
+How many vehicles are in overflow?
+
+Which contractors are currently on site?
+
+How many spaces remain across both lots?
+
+Show today's denied parking requests.
+
+What phase is the parking Auto Run currently in?
+
+This allows Parking Access to become another operational domain
+available to the EES intelligence layer.
+
+Author
 
 EES Portfolio Universe Exclusive by Jeremiah Lupton (JDL)
 
-# License
+License
 
 This project is licensed under the MIT License.
 
 See:
 
-```text
 LICENSE
-```
 
 for details.
 
----
+EES Industrial Universe
 
-# EES Industrial Universe
+The EES Industrial Universe is a connected portfolio of industrial
+digital twins, data engineering systems, manufacturing intelligence
+tools, controls simulations, and AI-enabled operational systems.
 
-The EES Industrial Universe is a connected portfolio of industrial digital twins, data engineering systems, manufacturing intelligence tools, controls simulations, and AI-enabled operational systems.
+The long-term objective is to demonstrate how independent operational
+systems can share a common data platform while preserving their
+individual domain responsibilities.
 
-The long-term objective is to demonstrate how independent operational systems can share a common data platform while preserving their individual domain responsibilities.
-
-```text
 Power
 Controls
 Manufacturing
 Supply
 Facility Access
+Workforce
 Analytics
 Artificial Intelligence
         │
         ▼
 EES Industrial Universe
-```
 
----
+EES Pharma Parking Access Digital Twin · v3.0.1
 
-**EES Pharma Parking Access Digital Twin · v3.0.0**
-
-**Secure Access · Virtual PLC · FastAPI · PostgreSQL · Three.js · EES Universe**
+Secure Access · Shift Auto Run · Overflow Parking · Virtual PLC ·
+FastAPI · PostgreSQL · Three.js · EES Universe
