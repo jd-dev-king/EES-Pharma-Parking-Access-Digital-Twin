@@ -735,7 +735,7 @@ async def auto_enter_visitor(vehicle):
         f"Security reviewing {vehicle}"
     )
 
-    await asyncio.sleep(0.6)
+    await asyncio.sleep(1.25)
 
     with connection() as conn, conn.cursor() as cur:
 
@@ -1424,10 +1424,11 @@ async def run_accelerated_cycle():
                 "Processing accelerated schedule"
             )
 
-            #
-            # Fast enough for portfolio demonstration,
-            # slow enough to see individual activity.
-            #
+            # Accelerated portfolio pacing:
+            # fast enough to demonstrate a full shift cycle,
+            # slow enough for a visitor to follow each arrival,
+            # gate transition, overflow route, and departure.
+
             delta = max(
                 minute - previous_minute,
                 1,
@@ -1435,8 +1436,8 @@ async def run_accelerated_cycle():
 
             await asyncio.sleep(
                 min(
-                    max(delta * .025, .16),
-                    1.8,
+                    max(delta * 0.075, 0.65),
+                    3.0,
                 )
             )
 
